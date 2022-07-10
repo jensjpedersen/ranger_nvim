@@ -31,9 +31,18 @@ local function open_default_program()
 
     if (len_string > 0) then
         -- Open with nvim
+        -- TODO: fix filetype detection - create empty buffer, set autocmd for buffer, open path in buffer
+        --vim.cmd([[autocmd BufCreate,BufNewFile,BufWinEnter * e %]])
         vim.cmd('edit ' .. open_path)
-        vim.cmd('edit %')
-        os.execute('echo ' .. type(open_path) .. ' >> ~/test_path')
+        vim.cmd('filetype detect')
+        -- vim.cmd('edit ~/.vimrc')
+        -- TODO how to open file from nvim lua
+        --vim.api.nvim_exec('edit ~/.vimrc', true)
+        --vim.cmd('edit ~/.vimrc')
+        -- vim.cmd('vsplit')
+        -- local win = vim.api.nvim_get_current_win()
+        -- local buf = vim.api.nvim_create_buf(true, false)
+        -- vim.api.nvim_win_set_buf(win, buf)
     else
         -- open with rilfe
         os.execute('rifle ' .. open_path)
