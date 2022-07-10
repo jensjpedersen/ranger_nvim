@@ -9,16 +9,21 @@ end
 
 local function read_ranger_tmp()
     local tmp_file=io.open(tmp_path)
+
+    if tmp_file == nil then
+        return nil
+    end
+
     local open_path = tmp_file:read('*l')
     io.close(tmp_file)
     return open_path
 end
 
 local function open_default_program()
-    vim.api.nvim_command('bdelete! term://*ranger*') -- Delete buffer
-    local open_path = read_ranger_tmp()              -- Get selected ranger file
-    if io.open(open_path) == nil then
-        os.exit(1)
+    vim.api.nvim_command('bdelete!')                 -- Delete buffer
+    local open_path = read_ranger_tmp()              -- Get selected ranger file path
+    if open_path == nil then
+        return                                       -- Exit if tmp does not exist
     end
 
     local default_nvim = io.popen('rifle -l ' .. open_path .. '| grep nvim')
@@ -26,7 +31,9 @@ local function open_default_program()
 
     if (len_string > 0) then
         -- Open with nvim
-        vim.api.nvim_command('e ' .. open_path)
+        vim.cmd('edit ' .. open_path)
+        vim.cmd('edit %')
+        os.execute('echo ' .. type(open_path) .. ' >> ~/test_path')
     else
         -- open with rilfe
         os.execute('rifle ' .. open_path)
@@ -51,8 +58,8 @@ local function set_auto_cmd()
     })
 end
 
+set_auto_cmd()
 local function ranger_nvim()
-    set_auto_cmd()
     open_ranger()
 end
 
