@@ -1,5 +1,6 @@
+local tmp_path = '/tmp/ranger_nvim_tmp'
+
 local function open_ranger()
-    local tmp_path = '/home/jensjp/nvim_ranger_tmp'
     if io.open(tmp_path) ~= nil then
         os.execute('rm ' .. tmp_path)
     end
@@ -7,7 +8,6 @@ local function open_ranger()
 end
 
 local function read_ranger_tmp()
-    local tmp_path = '/home/jensjp/nvim_ranger_tmp'
     local tmp_file=io.open(tmp_path)
     local open_path = tmp_file:read('*l')
     io.close(tmp_file)
