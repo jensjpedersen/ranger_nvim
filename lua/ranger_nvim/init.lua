@@ -1,10 +1,16 @@
 local tmp_path = '/tmp/ranger_nvim_tmp'
 
-local function open_ranger()
+local function open_ranger(dir)
     if io.open(tmp_path) ~= nil then
         os.execute('rm ' .. tmp_path)
     end
-    vim.api.nvim_command('terminal ranger --choosefile ' .. tmp_path)
+
+    if dir == nil then
+        vim.api.nvim_command('terminal ranger --choosefile ' .. tmp_path)
+    else
+        vim.api.nvim_command('terminal ranger --choosefile ' .. tmp_path .. ' ' .. dir)
+    end
+
 end
 
 local function read_ranger_tmp()
@@ -46,13 +52,15 @@ local function open_default_program()
     else
         -- open with rilfe
         os.execute('rifle ' .. open_path)
+        local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
+        open_ranger(dir)
     end
 end
 
 local function set_auto_cmd()
     vim.api.nvim_create_autocmd({"BufWinEnter", "TermOpen"}, {
         pattern = {"term://*ranger*"},
-        command = "set nonumber norelativenumber signcolumn=no",
+        command = "set nonumber norelativenumber signcolumn=no | startinsert",
     })
 
     vim.api.nvim_create_autocmd({"BufWinLeave", "TermClose"}, {
