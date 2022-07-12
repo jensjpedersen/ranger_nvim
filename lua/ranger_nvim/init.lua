@@ -42,7 +42,6 @@ local function open_ranger(dir)
     else
         vim.api.nvim_command('terminal ranger --choosefile ' .. tmp_path .. ' ' .. dir)
     end
-    vim.api.nvim_command([[startinsert]])
 end
 
 local function read_ranger_tmp()
@@ -64,7 +63,7 @@ local function open_default_program()
         return                                       -- Exit if tmp does not exist
     end
 
-    local default_nvim = io.popen('rifle -l ' .. open_path .. '| grep nvim')
+    local default_nvim = io.popen('rifle -l ' .. open_path .. '| grep -e nvim -e vim -e nano')
     local len_string = #default_nvim:read('*a')
 
     if (len_string > 0) then
