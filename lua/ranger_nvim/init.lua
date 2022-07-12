@@ -1,5 +1,36 @@
 local tmp_path = '/tmp/ranger_nvim_tmp'
 
+local function create_window()
+    local buf = vim.api.nvim_create_buf(true, true) -- create new emtpy buffer
+    --api.nvim_buf_set_option(buf, 'bufhidden', 'modifiable')
+
+    -- get dimensions
+    local width = vim.api.nvim_get_option("columns")
+    local height = vim.api.nvim_get_option("lines")
+    -- calculate our floating window size
+    -- local win_height = math.ceil(height * 0.8 - 4)
+    -- local win_width = math.ceil(width * 0.8)
+    local win_height = height
+    local win_width = width
+    -- Starting position
+    -- local row = math.ceil((height - win_height) / 2 - 1)
+    -- local col = math.ceil((width - win_width) / 2)
+    local row = 0
+    local col = 0
+
+    -- set some options
+    local opts = {
+        style = "minimal",
+        relative = "editor",
+        width = win_width,
+        height = win_height,
+        row = row,
+        col = col
+    }
+    local win = vim.api.nvim_open_win(buf, true, opts)
+    vim.api.nvim_call_function('nvim_win_set_option', {win, 'winhl', 'Normal:ErrorFloat'})
+end
+
 local function open_ranger(dir)
     if io.open(tmp_path) ~= nil then
         os.execute('rm ' .. tmp_path)
