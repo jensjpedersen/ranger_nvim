@@ -2,7 +2,8 @@ local tmp_path = '/tmp/ranger_nvim_tmp'
 
 local function create_window()
     local buf = vim.api.nvim_create_buf(true, true) -- create new emtpy buffer
-    --api.nvim_buf_set_option(buf, 'bufhidden', 'modifiable')
+    -- vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+    -- vim.api.nvim_buf_set_option(buf, 'modifiable', true)
 
     -- get dimensions
     local width = vim.api.nvim_get_option("columns")
@@ -41,7 +42,7 @@ local function open_ranger(dir)
     else
         vim.api.nvim_command('terminal ranger --choosefile ' .. tmp_path .. ' ' .. dir)
     end
-
+    vim.api.nvim_command([[startinsert]])
 end
 
 local function read_ranger_tmp()
@@ -68,28 +69,23 @@ local function open_default_program()
 
     if (len_string > 0) then
         -- Open with nvim
-        -- TODO: fix filetype detection - create empty buffer, set autocmd for buffer, open path in buffer
-        --vim.cmd([[autocmd BufCreate,BufNewFile,BufWinEnter * e %]])
         vim.cmd('edit ' .. open_path)
         vim.cmd('filetype detect')
-        -- vim.cmd('edit ~/.vimrc')
-        -- TODO how to open file from nvim lua
-        --vim.api.nvim_exec('edit ~/.vimrc', true)
-        --vim.cmd('edit ~/.vimrc')
-        -- vim.cmd('vsplit')
-        -- local win = vim.api.nvim_get_current_win()
-        -- local buf = vim.api.nvim_create_buf(true, false)
-        -- vim.api.nvim_win_set_buf(win, buf)
     else
-        -- open with rilfe
+        -- open with rifle
         os.execute('rifle ' .. open_path)
         local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
+        create_window()
         open_ranger(dir)
     end
 end
 
 local function set_auto_cmd()
-    -- Deletes terminal buffer and opens path in default rifle program
+    vim.api.nvim_create_autocmd({"BufWinEnter", "TermOpen"}, {
+        pattern = {"term://*ranger*"},
+        command = "startinsert"
+    })
+    -- Deletes terminal buffer and opens path in default rifle application
     vim.api.nvim_create_autocmd({"TermClose"}, {
         pattern = {"term://*ranger*"},
         callback = open_default_program
@@ -98,6 +94,7 @@ end
 
 set_auto_cmd()
 local function ranger_nvim()
+    create_window()
     open_ranger()
 end
 
