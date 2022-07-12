@@ -89,16 +89,6 @@ local function open_default_program()
 end
 
 local function set_auto_cmd()
-    vim.api.nvim_create_autocmd({"BufWinEnter", "TermOpen"}, {
-        pattern = {"term://*ranger*"},
-        command = "set nonumber norelativenumber signcolumn=no | startinsert",
-    })
-
-    vim.api.nvim_create_autocmd({"BufWinLeave", "TermClose"}, {
-        pattern = {"term://*ranger*"},
-        command = "set number relativenumber signcolumn=yes"
-    })
-
     -- Deletes terminal buffer and opens path in default rifle program
     vim.api.nvim_create_autocmd({"TermClose"}, {
         pattern = {"term://*ranger*"},
