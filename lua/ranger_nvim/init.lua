@@ -1,4 +1,9 @@
-local tmp_path = '/tmp/ranger_nvim_tmp'
+
+local data = {
+    tmp_path = '/tmp/ranger_nvim_tmp',
+    buf = nil,
+    win = nil
+}
 
 local function create_window()
     local buf = vim.api.nvim_create_buf(true, true) -- create new emtpy buffer
@@ -30,22 +35,24 @@ local function create_window()
     }
     local win = vim.api.nvim_open_win(buf, true, opts)
     vim.api.nvim_call_function('nvim_win_set_option', {win, 'winhl', 'Normal:ErrorFloat'})
+    data.buf = buf
+    data.win = win
 end
 
 local function open_ranger(dir)
-    if io.open(tmp_path) ~= nil then
-        os.execute('rm ' .. tmp_path)
+    if io.open(data.tmp_path) ~= nil then
+        os.execute('rm ' .. data.tmp_path)
     end
 
     if dir == nil then
-        vim.api.nvim_command('terminal ranger --choosefile ' .. tmp_path)
+        vim.api.nvim_command('terminal ranger --choosefile ' .. data.tmp_path)
     else
-        vim.api.nvim_command('terminal ranger --choosefile ' .. tmp_path .. ' ' .. dir)
+        vim.api.nvim_command('terminal ranger --choosefile ' .. data.tmp_path .. ' ' .. dir)
     end
 end
 
 local function read_ranger_tmp()
-    local tmp_file=io.open(tmp_path)
+    local tmp_file=io.open(data.tmp_path)
 
     if tmp_file == nil then
         return nil
@@ -56,8 +63,10 @@ local function read_ranger_tmp()
     return open_path
 end
 
+
 local function open_default_program()
-    vim.api.nvim_command('bdelete!')                 -- Delete buffer
+    vim.api.nvim_buf_delete(data.buf, {})
+    -- vim.api.nvim_command('bdelete!')                 -- Delete buffer
     local open_path = read_ranger_tmp()              -- Get selected ranger file path
     if open_path == nil then
         return                                       -- Exit if tmp does not exist
@@ -76,6 +85,7 @@ local function open_default_program()
         local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
         create_window()
         open_ranger(dir)
+        -- start_insert()
     end
 end
 
@@ -88,6 +98,7 @@ local function set_auto_cmd()
     vim.api.nvim_create_autocmd({"TermClose"}, {
         pattern = {"term://*ranger*"},
         callback = open_default_program
+        -- command = "lua require'init'.open_default_program()"
     })
 end
 
@@ -99,6 +110,7 @@ end
 
 return {
     open_ranger = open_ranger,
+    open_default_program = open_default_program,
     set_auto_cmd = set_auto_cmd,
     ranger_nvim = ranger_nvim
 }
