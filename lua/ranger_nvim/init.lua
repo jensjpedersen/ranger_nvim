@@ -7,8 +7,6 @@ local data = {
 
 local function create_window()
     local buf = vim.api.nvim_create_buf(true, true) -- create new emtpy buffer
-    -- vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
-    -- vim.api.nvim_buf_set_option(buf, 'modifiable', true)
 
     -- get dimensions
     local width = vim.api.nvim_get_option("columns")
@@ -66,7 +64,6 @@ end
 
 local function open_default_program()
     vim.api.nvim_buf_delete(data.buf, {})
-    -- vim.api.nvim_command('bdelete!')                 -- Delete buffer
     local open_path = read_ranger_tmp()              -- Get selected ranger file path
     if open_path == nil then
         return                                       -- Exit if tmp does not exist
@@ -85,12 +82,12 @@ local function open_default_program()
         local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
         create_window()
         open_ranger(dir)
-        -- start_insert()
+        vim.api.nvim_feedkeys("i", "m", false)
     end
 end
 
 local function set_auto_cmd()
-    vim.api.nvim_create_autocmd({"BufWinEnter", "TermOpen"}, {
+    vim.api.nvim_create_autocmd({"TermOpen"}, {
         pattern = {"term://*ranger*"},
         command = "startinsert"
     })
@@ -98,7 +95,6 @@ local function set_auto_cmd()
     vim.api.nvim_create_autocmd({"TermClose"}, {
         pattern = {"term://*ranger*"},
         callback = open_default_program
-        -- command = "lua require'init'.open_default_program()"
     })
 end
 
@@ -109,9 +105,6 @@ local function ranger_nvim()
 end
 
 return {
-    open_ranger = open_ranger,
-    open_default_program = open_default_program,
-    set_auto_cmd = set_auto_cmd,
     ranger_nvim = ranger_nvim
 }
 
