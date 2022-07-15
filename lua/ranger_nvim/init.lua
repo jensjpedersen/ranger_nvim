@@ -61,6 +61,18 @@ local function read_ranger_tmp()
     return open_path
 end
 
+local function open_with_nvim(open_path)
+    vim.cmd('edit ' .. open_path)
+    vim.cmd('filetype detect')
+end
+
+local function open_with_rifle(open_path)
+    os.execute('rifle ' .. open_path)
+    local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
+    create_window()
+    open_ranger(dir)
+    vim.api.nvim_feedkeys("i", "m", false)
+end
 
 local function open_default_program()
     vim.api.nvim_buf_delete(data.buf, {})
@@ -73,21 +85,19 @@ local function open_default_program()
     local status = io.popen('timeout 0.5 rifle -l ' .. open_path .. ' &> /dev/null; echo $?')
     local status = status:read('*n')
 
+    if (status == 124) then
+        open_with_rifle(open_path)
+        return
+    end
+
     local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR'
     local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
     local len_string = #default_nvim:read('*a')
 
-    if (len_string > 0) or (status == 124) then
-        -- Open with nvim
-        vim.cmd('edit ' .. open_path)
-        vim.cmd('filetype detect')
+    if (len_string > 0) then
+        open_with_nvim(open_path)
     else
-        -- open with rifle
-        os.execute('rifle ' .. open_path)
-        local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
-        create_window()
-        open_ranger(dir)
-        vim.api.nvim_feedkeys("i", "m", false)
+        open_with_rifle(open_path)
     end
 end
 
