@@ -59,6 +59,7 @@ local function read_ranger_tmp()
 
     local open_path = tmp_file:read('*l')
     io.close(tmp_file)
+    -- os.execute('echo "$(date +%T):open_path: .. open_path .. " >> ranger_nvim.log')
     return open_path
 end
 
@@ -87,9 +88,11 @@ local function open_default_program()
 
     -- Timout and default to nvim if rifle command takes to long
     os.execute('echo "$(date +%T):Check status rifle >> ranger_nvim.log')
-    local status = io.popen('timeout 0.4 rifle -l ' .. open_path .. ' &> /dev/null; echo $?')
+    -- _, _, status = os.execute('timeout 0.04 rifle -l ' .. open_path .. ' > /dev/null')
+    local status = io.popen('timeout 0.4 rifle -l /tmp/ranger_nvim_tmp  > /dev/null; echo $?')
     local status = status:read('*n')
-    os.execute('echo "$(date +%T):status: "' .. status .. '>> ranger_nvim.log')
+    -- os.execute('timeout 0.04 rifle -l ' .. open_path .. ' > /dev/null')
+    os.execute('echo $(date +%T):status:' .. tostring(status ) .. '>> ranger_nvim.log')
 
 
     if (status == 124) then
