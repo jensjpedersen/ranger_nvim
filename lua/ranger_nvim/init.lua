@@ -69,10 +69,15 @@ local function open_default_program()
         return                                       -- Exit if tmp does not exist
     end
 
-    local default_nvim = io.popen('rifle -l ' .. open_path .. '| grep -e nvim -e vim -e nano')
+    -- Timout and default to nvim if rifle command takes to long
+    local status = io.popen('timeout 0.5 rifle -l ' .. open_path .. ' &> /dev/null; echo $?')
+    local status = status:read('*n')
+
+    local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR'
+    local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
     local len_string = #default_nvim:read('*a')
 
-    if (len_string > 0) then
+    if (len_string > 0) or (status == 124) then
         -- Open with nvim
         vim.cmd('edit ' .. open_path)
         vim.cmd('filetype detect')
