@@ -85,13 +85,11 @@ local function open_default_program()
     local status = io.popen('timeout 0.4 rifle -l ' .. open_path .. ' &> /dev/null; echo $?')
     local status = status:read('*n')
 
-
     if (status == 124) then
         open_with_nvim(open_path)
         return
     end
 
-    os.execute('sleep 2')
     local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR'
     local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
     local len_string = #default_nvim:read('*a')
