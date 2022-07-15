@@ -2,7 +2,8 @@
 local data = {
     tmp_path = '/tmp/ranger_nvim_tmp',
     buf = nil,
-    win = nil
+    win = nil,
+    debug = false
 }
 
 local function create_window()
@@ -38,7 +39,8 @@ local function create_window()
 end
 
 local function open_ranger(dir)
-    os.execute('echo "$(date +%T):Start:open_ranger()" >> ranger_nvim.log')
+    if data.debug == true then os.execute('echo "$(date +%T):Start:open_ranger()" >> ranger_nvim.log') end
+
     if io.open(data.tmp_path) ~= nil then
         os.execute('rm ' .. data.tmp_path)
     end
@@ -59,14 +61,12 @@ local function read_ranger_tmp()
 
     local open_path = tmp_file:read('*l')
     io.close(tmp_file)
-    -- os.execute('echo "$(date +%T):open_path: .. open_path .. " >> ranger_nvim.log')
     return open_path
 end
 
 local function open_with_nvim(open_path)
     vim.cmd('edit ' .. open_path)
     vim.cmd('filetype detect')
-    return
 end
 
 local function open_with_rifle(open_path)
@@ -75,11 +75,11 @@ local function open_with_rifle(open_path)
     create_window()
     open_ranger(dir)
     vim.api.nvim_feedkeys("i", "m", false)
-    return
 end
 
 local function open_default_program()
-    os.execute('echo "$(date +%T):Start:open_default_program()" >> ranger_nvim.log')
+    if data.debug == true then os.execute('echo "$(date +%T):Start:open_default_program()" >> ranger_nvim.log') end
+
     vim.api.nvim_buf_delete(data.buf, {})
     local open_path = read_ranger_tmp()              -- Get selected ranger file path
     if open_path == nil then
@@ -87,16 +87,14 @@ local function open_default_program()
     end
 
     -- Timout and default to nvim if rifle command takes to long
-    os.execute('echo "$(date +%T):Check status rifle >> ranger_nvim.log')
-    -- _, _, status = os.execute('timeout 0.04 rifle -l ' .. open_path .. ' > /dev/null')
-    local status = io.popen('timeout 0.4 rifle -l /tmp/ranger_nvim_tmp  > /dev/null; echo $?')
+    if data.debug == true then os.execute('echo "$(date +%T):Check status rifle >> ranger_nvim.log') end
+    local status = io.popen('timeout 0.25 rifle -l /tmp/ranger_nvim_tmp  > /dev/null; echo $?')
     local status = status:read('*n')
-    -- os.execute('timeout 0.04 rifle -l ' .. open_path .. ' > /dev/null')
-    os.execute('echo $(date +%T):status:' .. tostring(status ) .. '>> ranger_nvim.log')
+    if data.debug == true then os.execute('echo $(date +%T):status:' .. tostring(status ) .. '>> ranger_nvim.log') end
 
 
     if (status == 124) then
-        os.execute('echo "$(date +%T):if status == 124" >> ranger_nvim.log')
+        if data.debug == true then os.execute('echo "$(date +%T):if status == 124" >> ranger_nvim.log') end
         open_with_nvim(open_path)
         return
     end
@@ -106,13 +104,13 @@ local function open_default_program()
     local len_string = #default_nvim:read('*a')
 
     if (len_string > 0) then
-        os.execute('echo "$(date +%T):if string>0:open_with_nvim()" >> ranger_nvim.log')
+        if data.debug == true then os.execute('echo "$(date +%T):if string>0:open_with_nvim()" >> ranger_nvim.log') end
         open_with_nvim(open_path)
     else
-        os.execute('echo "$(date +%T):else:open_with_rifle" >> ranger_nvim.log')
+        if data.debug == true then os.execute('echo "$(date +%T):else:open_with_rifle" >> ranger_nvim.log') end
         open_with_rifle(open_path)
     end
-    os.execute('echo "$(date +%T):End:open_default_program()" >> ranger_nvim.log')
+    if data.debug == true then os.execute('echo "$(date +%T):End:open_default_program()" >> ranger_nvim.log') end
 end
 
 local function set_auto_cmd()
