@@ -86,7 +86,7 @@ local function open_default_program()
     local status = status:read('*n')
 
     if (status == 124) then
-        open_with_rifle(open_path)
+        open_with_nvim(open_path)
         return
     end
 
