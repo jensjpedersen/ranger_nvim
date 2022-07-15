@@ -90,15 +90,16 @@ local function open_default_program()
         return
     end
 
-    local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR'
-    local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
-    local len_string = #default_nvim:read('*a')
+    open_with_nvim(open_path)
+    -- local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR'
+    -- local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
+    -- local len_string = #default_nvim:read('*a')
 
-    if (len_string > 0) then
-        open_with_nvim(open_path)
-    else
-        open_with_rifle(open_path)
-    end
+    -- if (len_string > 0) then
+    --     open_with_nvim(open_path)
+    -- else
+    --     open_with_rifle(open_path)
+    -- end
 end
 
 local function set_auto_cmd()
