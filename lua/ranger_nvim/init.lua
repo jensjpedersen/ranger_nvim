@@ -94,7 +94,12 @@ local function open_default_program()
 
 
     if (status == 124) then
-        if data.debug == true then os.execute('echo "$(date +%T):if status == 124" >> ranger_nvim.log') end
+        if data.debug == true then os.execute('echo "$(date +%T):if status == 124:timout" >> ranger_nvim.log') end
+        open_with_nvim(open_path)
+        return
+    elseif
+        (status == 127) then 
+        if data.debug == true then os.execute('echo "$(date +%T):if status == 127:command not found" >> ranger_nvim.log') end
         open_with_nvim(open_path)
         return
     end
