@@ -30,11 +30,11 @@ local function create_window()
         width = win_width,
         height = win_height,
         row = row,
-        col = col
+        col = col,
     }
     local win = vim.api.nvim_open_win(buf, true, opts)
     vim.api.nvim_call_function('nvim_win_set_option', {win, 'winhl', 'Normal:ErrorFloat'})
-
+    vim.api.nvim_win_set_option(win, 'winhighlight', 'Normal:Normal') -- set win bg color
     vim.api.nvim_win_close(win, true) -- remove window overlay
     vim.cmd('buffer ' .. buf) -- swith to buffer
 
