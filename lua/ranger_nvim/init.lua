@@ -34,8 +34,13 @@ local function create_window()
     }
     local win = vim.api.nvim_open_win(buf, true, opts)
     vim.api.nvim_call_function('nvim_win_set_option', {win, 'winhl', 'Normal:ErrorFloat'})
+
+    vim.api.nvim_win_close(win, true) -- remove window overlay
+    vim.cmd('buffer ' .. buf) -- swith to buffer
+
     data.buf = buf
     data.win = win
+
 end
 
 local function open_ranger(dir)
@@ -91,7 +96,6 @@ local function open_default_program()
     local status = io.popen('timeout 0.25 rifle -l /tmp/ranger_nvim_tmp  > /dev/null; echo $?')
     local status = status:read('*n')
     if data.debug == true then os.execute('echo $(date +%T):status:' .. tostring(status ) .. '>> ranger_nvim.log') end
-
 
     if (status == 124) then
         if data.debug == true then os.execute('echo "$(date +%T):if status == 124:timout" >> ranger_nvim.log') end
