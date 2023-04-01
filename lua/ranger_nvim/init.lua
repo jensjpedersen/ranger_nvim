@@ -3,7 +3,7 @@ local data = {
     tmp_path = '/tmp/ranger_nvim_tmp',
     buf = nil,
     win = nil,
-    debug = false
+    debug = true
 }
 
 local function create_window()
@@ -92,23 +92,28 @@ local function open_default_program()
     end
 
     -- Timout and default to nvim if rifle command takes to long
-    if data.debug == true then os.execute('echo "$(date +%T):Check status rifle >> ranger_nvim.log') end
-    local status = io.popen('timeout 0.25 rifle -l /tmp/ranger_nvim_tmp  > /dev/null; echo $?')
-    local status = status:read('*n')
-    if data.debug == true then os.execute('echo $(date +%T):status:' .. tostring(status ) .. '>> ranger_nvim.log') end
+    -- if data.debug == true then os.execute('echo "$(date +%T):Check status rifle >> ranger_nvim.log') end
+    -- local status = io.popen('timeout 0.25 rifle -l /tmp/ranger_nvim_tmp  > /dev/null; echo $?')
+    -- local status = status:read('*n')
+    -- if data.debug == true then os.execute('echo $(date +%T):status:' .. tostring(status ) .. '>> ranger_nvim.log') end
 
-    if (status == 124) then
-        if data.debug == true then os.execute('echo "$(date +%T):if status == 124:timout" >> ranger_nvim.log') end
-        open_with_nvim(open_path)
-        return
-    elseif
-        (status == 127) then 
-        if data.debug == true then os.execute('echo "$(date +%T):if status == 127:command not found" >> ranger_nvim.log') end
-        open_with_nvim(open_path)
-        return
-    end
+    -- if (status == 124) then
+    --     if data.debug == true then os.execute('echo "$(date +%T):if status == 124:timout" >> ranger_nvim.log') end
+    --     open_with_nvim(open_path)
+    --     return
+    -- elseif
+    --     (status == 127) then 
+    --     if data.debug == true then os.execute('echo "$(date +%T):if status == 127:command not found" >> ranger_nvim.log') end
+    --     open_with_nvim(open_path)
+    --     return
+    -- end
 
-    local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR'
+    -- Get default opener 
+    local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR' -- Open terminal editors in nvim
+
+    -- Rifle or xdg-open
+
+
     local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
     local len_string = #default_nvim:read('*a')
 
