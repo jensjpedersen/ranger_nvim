@@ -82,12 +82,60 @@ local function open_with_nvim(open_path)
     vim.cmd('filetype detect')
 end
 
+
+
+
+-- XXX: Refactor X open fuction if ok
 local function open_with_rifle(open_path)
     os.execute('rifle ' .. open_path)
     local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
     create_window()
     open_ranger(dir)
     vim.api.nvim_feedkeys("i", "m", false)
+end
+
+local function open_with_xdg(open_path)
+    os.execute('xdg-open ' .. open_path)
+
+    local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
+    create_window()
+    open_ranger(dir)
+    vim.api.nvim_feedkeys("i", "m", false)
+end
+
+local function open_with(open_path)
+    if data.config.fileopener == 'rifle' then
+        open_with_rifle(open_path)
+    elseif data.config.fileopener == 'xdg-open' then
+        open_with_xdg(open_path)
+    elseif data.config.fileopener == 'nvim' then
+        open_with_nvim(open_path)
+    end
+end
+
+
+local function check_default_program(open_path)
+
+    -- Get default opener 
+    local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR' -- Open terminal editors in nvim
+
+    -- Rifle or xdg-open
+
+
+    local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
+
+    return default_nvim
+
+
+
+    -- if data.config.fileopener == 'rifle' then
+    --     open_with_rifle(open_path)
+    -- elseif data.config.fileopener == 'xdg-open' then
+    --     open_with_xdg(open_path)
+    -- elseif data.config.fileopener == 'nvim' then
+    --     open_with_nvim(open_path)
+    -- end
+    --
 end
 
 local function open_default_program()
@@ -99,30 +147,16 @@ local function open_default_program()
         return                                       -- Exit if tmp does not exist
     end
 
-    -- Timout and default to nvim if rifle command takes to long
-    -- if data.debug == true then os.execute('echo "$(date +%T):Check status rifle >> ranger_nvim.log') end
-    -- local status = io.popen('timeout 0.25 rifle -l /tmp/ranger_nvim_tmp  > /dev/null; echo $?')
-    -- local status = status:read('*n')
-    -- if data.debug == true then os.execute('echo $(date +%T):status:' .. tostring(status ) .. '>> ranger_nvim.log') end
+    -- -- Get default opener 
+    -- local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR' -- Open terminal editors in nvim
 
-    -- if (status == 124) then
-    --     if data.debug == true then os.execute('echo "$(date +%T):if status == 124:timout" >> ranger_nvim.log') end
-    --     open_with_nvim(open_path)
-    --     return
-    -- elseif
-    --     (status == 127) then 
-    --     if data.debug == true then os.execute('echo "$(date +%T):if status == 127:command not found" >> ranger_nvim.log') end
-    --     open_with_nvim(open_path)
-    --     return
-    -- end
-
-    -- Get default opener 
-    local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR' -- Open terminal editors in nvim
-
-    -- Rifle or xdg-open
+    -- -- Rifle or xdg-open
 
 
-    local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
+    -- local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
+
+
+    local default_nvim = check_default_program(open_path)
     local len_string = #default_nvim:read('*a')
 
     if (len_string > 0) then
@@ -165,7 +199,6 @@ function M.setup(config)
     for k, v in pairs(data.config) do
         if data.debug == true then os.execute('echo "$(date +%T):' .. k .. ' | ' .. v .. '" >> ' .. data.log_path) end
     end
-
 
 
     -- XXX: use setup
