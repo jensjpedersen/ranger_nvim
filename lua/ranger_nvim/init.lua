@@ -95,7 +95,7 @@ local function open_with_rifle(open_path)
 end
 
 local function open_with_xdg(open_path)
-    os.execute('xdg-open ' .. open_path)
+    os.execute('xdg-open ' .. open_path .. ' &')
 
     local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
     create_window()
@@ -103,39 +103,42 @@ local function open_with_xdg(open_path)
     vim.api.nvim_feedkeys("i", "m", false)
 end
 
-local function open_with(open_path)
+local function open_with_other(open_path)
     if data.config.fileopener == 'rifle' then
         open_with_rifle(open_path)
     elseif data.config.fileopener == 'xdg-open' then
         open_with_xdg(open_path)
-    elseif data.config.fileopener == 'nvim' then
-        open_with_nvim(open_path)
     end
+    -- elseif data.config.fileopener == 'nvim' then
+    --     open_with_nvim(open_path)
+    -- end
 end
 
 
 local function check_default_program(open_path)
+    -- Check if text editor is default program
 
-    -- Get default opener 
     local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR' -- Open terminal editors in nvim
 
-    -- Rifle or xdg-open
+    local default_nvim = nil
+
+    if data.debug == true then os.execute('echo OK' .. ' >> ' .. data.log_path) end
+
+     if data.config.fileopener == 'rifle' then
+        default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
+         return #default_nvim:read("*a")
+
+     elseif data.config.fileopener == 'xdg-open' then
+         default_nvim = io.popen('xdg-mime query default $(xdg-mime query filetype ' .. open_path .. ') | grep ' .. grep_opts)
+         return #default_nvim:read("*a")
+
+     elseif data.config.fileopener == 'nvim' then
+         return 1
+     end
+
+     -- TODO: how to read result from io.popen. Only gets 'userdata'
 
 
-    local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
-
-    return default_nvim
-
-
-
-    -- if data.config.fileopener == 'rifle' then
-    --     open_with_rifle(open_path)
-    -- elseif data.config.fileopener == 'xdg-open' then
-    --     open_with_xdg(open_path)
-    -- elseif data.config.fileopener == 'nvim' then
-    --     open_with_nvim(open_path)
-    -- end
-    --
 end
 
 local function open_default_program()
@@ -156,16 +159,32 @@ local function open_default_program()
     -- local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
 
 
-    local default_nvim = check_default_program(open_path)
-    local len_string = #default_nvim:read('*a')
+    -- XXX: should return string insted of handle
+    local len_string = check_default_program(open_path)
+
+
+    -- local str = default_nvim:read("*a")
+
+    -- local len_string = #str
+
+    -- local len_string = #default_nvim:read('*a')
+
+
+    os.execute('echo ' .. len_string .. ' >> ' .. data.log_path)
+    -- os.execute('echo ' .. str .. ' >> ' .. data.log_path)
+
+
+
+
 
     if (len_string > 0) then
         if data.debug == true then os.execute('echo "$(date +%T):if string>0:open_with_nvim()" >> ranger_nvim.log') end
         open_with_nvim(open_path)
     else
         if data.debug == true then os.execute('echo "$(date +%T):else:open_with_rifle" >> ranger_nvim.log') end
-        open_with_rifle(open_path)
+        open_with_other(open_path)
     end
+
     if data.debug == true then os.execute('echo "$(date +%T):End:open_default_program()" >> ranger_nvim.log') end
 end
 
@@ -200,9 +219,8 @@ function M.setup(config)
         if data.debug == true then os.execute('echo "$(date +%T):' .. k .. ' | ' .. v .. '" >> ' .. data.log_path) end
     end
 
-
-    -- XXX: use setup
-    vim.keymap.set('n', '<leader>f', '<cmd>lua require("ranger_nvim").ranger_nvim()<CR>')
+    -- set keymap
+    vim.keymap.set('n', data.config.mapping, '<cmd>lua require("ranger_nvim").ranger_nvim()<CR>')
 
 
     -- XXX: create user command
