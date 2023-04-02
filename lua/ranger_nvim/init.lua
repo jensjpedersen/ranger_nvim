@@ -1,10 +1,18 @@
+local s = require('ranger_nvim.setup')
+
+local M = {}
 
 local data = {
     tmp_path = '/tmp/ranger_nvim_tmp',
+    log_path = '/tmp/ranger_nvim.log',
     buf = nil,
     win = nil,
-    debug = true
+    debug = true,
+    config = {}
 }
+
+
+
 
 local function create_window()
     local buf = vim.api.nvim_create_buf(true, true) -- create new emtpy buffer
@@ -139,13 +147,35 @@ local function set_auto_cmd()
     })
 end
 
-set_auto_cmd()
-local function ranger_nvim()
+function M.ranger_nvim()
     create_window()
     open_ranger()
 end
 
-return {
-    ranger_nvim = ranger_nvim
-}
+
+function M.setup(config)
+    set_auto_cmd()
+
+    -- Get config
+    data.config = s.setup(config)
+
+
+    if data.debug == true then os.execute('echo "$(date +%T):_config key, values:" >> ' .. data.log_path) end
+
+    for k, v in pairs(data.config) do
+        if data.debug == true then os.execute('echo "$(date +%T):' .. k .. ' | ' .. v .. '" >> ' .. data.log_path) end
+    end
+
+
+
+    -- XXX: use setup
+    vim.keymap.set('n', '<leader>f', '<cmd>lua require("ranger_nvim").ranger_nvim()<CR>')
+
+
+    -- XXX: create user command
+
+end
+
+
+return M
 
