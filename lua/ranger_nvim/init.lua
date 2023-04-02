@@ -7,7 +7,7 @@ local data = {
     log_path = '/tmp/ranger_nvim.log',
     buf = nil,
     win = nil,
-    debug = true,
+    debug = false,
     config = {}
 }
 
@@ -85,7 +85,8 @@ end
 
 
 
--- XXX: Refactor X open fuction if ok
+-- TODO: Refactor X open fuction if ok
+-- TODO: remember last ranger item pos
 local function open_with_rifle(open_path)
     os.execute('rifle ' .. open_path)
     local dir = string.gsub(open_path, "(.*/)(.*)", "%1")
@@ -122,8 +123,6 @@ local function check_default_program(open_path)
 
     local default_nvim = nil
 
-    if data.debug == true then os.execute('echo OK' .. ' >> ' .. data.log_path) end
-
      if data.config.fileopener == 'rifle' then
         default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
          return #default_nvim:read("*a")
@@ -150,42 +149,17 @@ local function open_default_program()
         return                                       -- Exit if tmp does not exist
     end
 
-    -- -- Get default opener 
-    -- local grep_opts = '-e nvim -e vim -e nano -e micro -e vi -e EDITOR' -- Open terminal editors in nvim
-
-    -- -- Rifle or xdg-open
-
-
-    -- local default_nvim = io.popen('rifle -l ' .. open_path .. '| head -n 1 | grep ' .. grep_opts)-- .. grep_opts)
-
-
-    -- XXX: should return string insted of handle
     local len_string = check_default_program(open_path)
 
-
-    -- local str = default_nvim:read("*a")
-
-    -- local len_string = #str
-
-    -- local len_string = #default_nvim:read('*a')
-
-
-    os.execute('echo ' .. len_string .. ' >> ' .. data.log_path)
-    -- os.execute('echo ' .. str .. ' >> ' .. data.log_path)
-
-
-
-
-
     if (len_string > 0) then
-        if data.debug == true then os.execute('echo "$(date +%T):if string>0:open_with_nvim()" >> ranger_nvim.log') end
+        if data.debug == true then os.execute('echo "$(date +%T):if string>0:open_with_nvim()" >> ' .. data.log_path) end
         open_with_nvim(open_path)
     else
-        if data.debug == true then os.execute('echo "$(date +%T):else:open_with_rifle" >> ranger_nvim.log') end
+        if data.debug == true then os.execute('echo "$(date +%T):else:open_with_rifle" >> ' .. data.log_path) end
         open_with_other(open_path)
     end
 
-    if data.debug == true then os.execute('echo "$(date +%T):End:open_default_program()" >> ranger_nvim.log') end
+    if data.debug == true then os.execute('echo "$(date +%T):End:open_default_program()" >> ' .. data.log_path) end
 end
 
 local function set_auto_cmd()
@@ -212,16 +186,16 @@ function M.setup(config)
     -- Get config
     data.config = s.setup(config)
 
-
-    if data.debug == true then os.execute('echo "$(date +%T):_config key, values:" >> ' .. data.log_path) end
-
-    for k, v in pairs(data.config) do
-        if data.debug == true then os.execute('echo "$(date +%T):' .. k .. ' | ' .. v .. '" >> ' .. data.log_path) end
+    -- Print config in log
+    if data.debug == true then 
+        os.execute('echo "$(date +%T):Print data.config: key | value:" >> ' .. data.log_path)
+        for k, v in pairs(data.config) do
+            os.execute('echo "     ' .. k .. ' | ' .. v .. '" >> ' .. data.log_path)
+        end
     end
 
     -- set keymap
     vim.keymap.set('n', data.config.mapping, '<cmd>lua require("ranger_nvim").ranger_nvim()<CR>')
-
 
     -- XXX: create user command
 
