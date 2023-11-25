@@ -30,7 +30,7 @@ with Neovim.
 
 ## Configuration 
 To customize ranger_nvim according to your preferences, you can adjust the
-configuration options.
+configuration options in Lua.
 
 ### Default configuration:
 ```lua
